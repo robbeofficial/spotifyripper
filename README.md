@@ -25,8 +25,10 @@ prerequisites:
     - eyeD3 (pip install eyeD3)
 
 TODO
-	- playlist support
-	- avoid named pipe (use stdin)
+- album name subdir
+- skip exisiting track (avoid / completed tracks / completed = successful id3)
+- detect if other spotify instance is interrupting
+. add album supprt : spotify:album:1UnRYaeCev9JVKEHWBEgHe
 
 FIXME
 ..done!
