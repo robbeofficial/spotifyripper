@@ -14,7 +14,8 @@ example
 
 features
     - real-time VBR ripping from spotify PCM stream
-    - writes id3 tags (including album cover)
+    - writes id3 tags v1.1 compatible with old mp3 players
+    - creates files and directories based on the following structure Artist/Album/01 - Artist - Song.mp3
 
 prerequisites:
     - libspotify (download at https://developer.spotify.com/technologies/libspotify/)
