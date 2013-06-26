@@ -20,17 +20,11 @@ prerequisites:
     - libspotify (download at https://developer.spotify.com/technologies/libspotify/)
     - pyspotify (sudo pip install -U pyspotify)
     - spotify appkey (download at developer.spotify.com, requires premium!)
-    - jukebox.py (pyspotify example)
     - lame
     - eyeD3 (pip install eyeD3)
 
 TODO
-- album name subdir
 - skip exisiting track (avoid / completed tracks / completed = successful id3)
 - detect if other spotify instance is interrupting
 . add album supprt : spotify:album:1UnRYaeCev9JVKEHWBEgHe
 
-FIXME
-..done!
-Assertion 'pa_atomic_load(&(b)->_ref) > 0' failed at pulsecore/memblock.c:590, function pa_memblock_unref(). Aborting.
-Aborted (core dumped)
