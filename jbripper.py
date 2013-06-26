@@ -1,29 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-
-# usage
-#     ./jbripper.py [username] [password] [spotify_url]
-
-# example
-#     "./jbripper.py user pass spotify:track:52xaypL0Kjzk0ngwv3oBPR" creates "Beat It.mp3" file
-#     "./jbripper.py user pass spotify:user:[user]:playlist:7HC9PMdSbwGBBn3EVTaCNx rips entire playlist
-
+#
+# forked from https://github.com/robbeofficial/spotifyripper
 # features
 #     - real-time VBR ripping from spotify PCM stream
-#     - writes id3 tags (including album cover)
-
+#     - writes id3 tags v1.1 compatible with old mp3 players
+#     - creates files and directories based on the following structure Artist/Album/01 - Artist - Song.mp3
+# 
 # prerequisites:
 #     - libspotify (download at https://developer.spotify.com/technologies/libspotify/)
 #     - pyspotify (sudo pip install -U pyspotify)
 #     - spotify appkey (download at developer.spotify.com, requires premium!)
-#     - jukebox.py (pyspotify example)
 #     - lame
 #     - eyeD3 (pip install eyeD3)
 
 from subprocess import call, Popen, PIPE
 from spotify import Link, Image
 from jukebox import Jukebox, container_loaded
-import sys
+import os, sys
 import threading
 import time
 
@@ -42,9 +36,14 @@ def shell(cmdline): # execute shell commands (unicode support)
 
 def rip_init(session, track):
     global pipe, ripping
-    mp3file = track.name()+".mp3"
+    num_track = "%02d" % (track.index(),)
+    mp3file = str(num_track) + " - " + track.artists()[0].name() + " - " + track.name() + ".mp3"
+    directory = os.getcwd() + "/" + track.artists()[0].name() + "/" + track.album().name() + "/"
+    print directory
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     printstr("ripping " + mp3file + " ...")
-    p = Popen("lame --silent -V2 -h -r - \""+mp3file+"\"", stdin=PIPE, shell=True)
+    p = Popen("lame --silent -V2 -h -r - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
     pipe = p.stdin
     ripping = True
 
@@ -61,36 +60,22 @@ def rip(session, frames, frame_size, num_frames, sample_type, sample_rate, chann
         pipe.write(frames);
 
 def rip_id3(session, track): # write ID3 data
-    # extract meta data from track
-    mp3file = track.name()+".mp3"
+    num_track = "%02d" % (track.index(),)
+    mp3file = str(num_track) + " - " + track.artists()[0].name() + " - " + track.name()+".mp3"
     artist = track.artists()[0].name()
     album = track.album().name()
     title = track.name()
-    number = track.index()
     year = track.album().year()
-
-    # download cover
-    image = session.image_create(track.album().cover())
-    while not image.is_loaded(): # does not work from MainThread!
-        time.sleep(0.1)
-    fh_cover = open('cover.jpg','wb')
-    fh_cover.write(image.data())
-    fh_cover.close()
-
-    # write id3 data
+    directory = os.getcwd() + "/" + track.artists()[0].name() + "/" + track.album().name() + "/"
     cmd = "eyeD3" + \
-          " --add-image cover.jpg:FRONT_COVER" + \
+	  " -1 " + \
           " -t \"" + title + "\"" + \
           " -a \"" + artist + "\"" + \
           " -A \"" + album + "\"" + \
-          " -n " + str(number) + \
+          " -n " + str(num_track) + \
           " -Y " + str(year) + \
-          " -Q " + \
-          " \"" + mp3file + "\""
+          " \"" + directory + mp3file + "\""
     shell(cmd)
-
-    # delete cover
-    shell("rm -f cover.jpg")
 
 class RipperThread(threading.Thread):
     def __init__(self, ripper):
@@ -150,5 +135,15 @@ class Ripper(Jukebox):
         Jukebox.end_of_track(self, session)
         end_of_track.set()
 
-ripper = Ripper(sys.argv[1],sys.argv[2]) # login
-ripper.connect()
+
+if __name__ == '__main__':
+	if len(sys.argv) >= 3:
+		ripper = Ripper(sys.argv[1],sys.argv[2]) # login
+		ripper.connect()
+	else:
+		print "spotify-to-mp3\n"
+		print "usage : \n"
+		print "	  ./jbripper.py [username] [password] [spotify_url]"
+		print "example : \n"
+	 	print "   ./jbripper.py user pass spotify:track:52xaypL0Kjzk0ngwv3oBPR - for a single file"
+		print "   ./jbripper.py user pass spotify:user:username:playlist:4vkGNcsS8lRXj4q945NIA4 - rips entire playlist"
