@@ -1,18 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-#
-# forked from https://github.com/robbeofficial/spotifyripper
-# features
-#     - real-time VBR ripping from spotify PCM stream
-#     - writes id3 tags v1.1 compatible with old mp3 players
-#     - creates files and directories based on the following structure Artist/Album/01 - Artist - Song.mp3
-# 
-# prerequisites:
-#     - libspotify (download at https://developer.spotify.com/technologies/libspotify/)
-#     - pyspotify (sudo pip install -U pyspotify)
-#     - spotify appkey (download at developer.spotify.com, requires premium!)
-#     - lame
-#     - eyeD3 (pip install eyeD3)
 
 from subprocess import call, Popen, PIPE
 from spotify import Link, Image
@@ -37,9 +24,8 @@ def shell(cmdline): # execute shell commands (unicode support)
 def rip_init(session, track):
     global pipe, ripping
     num_track = "%02d" % (track.index(),)
-    mp3file = str(num_track) + " - " + track.artists()[0].name() + " - " + track.name() + ".mp3"
+    mp3file = track.name()+".mp3"
     directory = os.getcwd() + "/" + track.artists()[0].name() + "/" + track.album().name() + "/"
-    print directory
     if not os.path.exists(directory):
         os.makedirs(directory)
     printstr("ripping " + mp3file + " ...")
@@ -61,21 +47,35 @@ def rip(session, frames, frame_size, num_frames, sample_type, sample_rate, chann
 
 def rip_id3(session, track): # write ID3 data
     num_track = "%02d" % (track.index(),)
-    mp3file = str(num_track) + " - " + track.artists()[0].name() + " - " + track.name()+".mp3"
+    mp3file = track.name()+".mp3"
     artist = track.artists()[0].name()
     album = track.album().name()
     title = track.name()
     year = track.album().year()
     directory = os.getcwd() + "/" + track.artists()[0].name() + "/" + track.album().name() + "/"
+
+    # download cover
+    image = session.image_create(track.album().cover())
+    while not image.is_loaded(): # does not work from MainThread!
+        time.sleep(0.1)
+    fh_cover = open('cover.jpg','wb')
+    fh_cover.write(image.data())
+    fh_cover.close()
+
+    # write id3 data
     cmd = "eyeD3" + \
-	  " -1 " + \
+          " --add-image cover.jpg:FRONT_COVER" + \
           " -t \"" + title + "\"" + \
           " -a \"" + artist + "\"" + \
           " -A \"" + album + "\"" + \
           " -n " + str(num_track) + \
           " -Y " + str(year) + \
+          " -Q " + \
           " \"" + directory + mp3file + "\""
     shell(cmd)
+
+    # delete cover
+    shell("rm -f cover.jpg")    
 
 class RipperThread(threading.Thread):
     def __init__(self, ripper):
@@ -141,7 +141,6 @@ if __name__ == '__main__':
 		ripper = Ripper(sys.argv[1],sys.argv[2]) # login
 		ripper.connect()
 	else:
-		print "spotify-to-mp3\n"
 		print "usage : \n"
 		print "	  ./jbripper.py [username] [password] [spotify_url]"
 		print "example : \n"

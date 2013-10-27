@@ -1,7 +1,7 @@
 spotifyripper
 =============
 
-small ripper script for spotify (rips playlists to mp3 and includes ID3 tags v1.1) 
+small ripper script for spotify (rips playlists to mp3 and includes ID3 tags) 
 
 note that stream ripping violates the ToC's of libspotify!
 
@@ -9,8 +9,8 @@ usage
 -----
     ./jbripper.py [username] [password] [spotify_url]
 
-example
--------
+examples
+--------
     "./jbripper.py user pass spotify:track:52xaypL0Kjzk0ngwv3oBPR" creates "Beat It.mp3" file
     "./jbripper.py user pass spotify:user:[user]:playlist:7HC9PMdSbwGBBn3EVTaCNx rips entire playlist
 
@@ -18,19 +18,19 @@ features
 --------
 * real-time VBR ripping from spotify PCM stream
 
-* writes id3 tags v1.1 compatible with old mp3 players
+* writes id3 tags (including album covers)
 
-* creates files and directories based on the following structure Artist/Album/01 - Artist - Song.mp3
+* creates files and directories based on the following structure artist/album/song.mp3
 
 prerequisites:
 --------------
 * libspotify (download at https://developer.spotify.com/technologies/libspotify/)
 
-* pyspotify (sudo pip install -U pyspotify)
+* pyspotify (sudo pip install -U pyspotify, requires python-dev)
 
-* spotify appkey (download at developer.spotify.com, requires premium!)
+* spotify binary appkey (download at developer.spotify.com and copy to wd, requires premium!)
 
-* lame
+* lame (sudo apt-get install lame)
 
 * eyeD3 (pip install eyeD3)
 
