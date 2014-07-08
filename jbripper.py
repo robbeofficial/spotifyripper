@@ -122,7 +122,7 @@ class Ripper(Jukebox):
     def __init__(self, *a, **kw):
         Jukebox.__init__(self, *a, **kw)
         self.ui = RipperThread(self) # replace JukeboxUI
-        self.session.set_preferred_bitrate(2) # 320 bps
+        self.session.set_preferred_bitrate(1) # 320 bps
 
     def music_delivery_safe(self, session, frames, frame_size, num_frames, sample_type, sample_rate, channels):
         rip(session, frames, frame_size, num_frames, sample_type, sample_rate, channels)
