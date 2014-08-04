@@ -9,7 +9,9 @@ import threading
 import time
 
 playback = False # set if you want to listen to the tracks that are currently ripped (start with "padsp ./jbripper.py ..." if using pulse audio)
+rawpcm = False # also saves a .pcm file with the raw PCM data as delivered by libspotify ()
 
+pcmfile = None
 pipe = None
 ripping = False
 end_of_track = threading.Event()
@@ -22,28 +24,36 @@ def shell(cmdline): # execute shell commands (unicode support)
     call(cmdline, shell=True)
 
 def rip_init(session, track):
-    global pipe, ripping
+    global pipe, ripping, pcmfile, rawpcm
     num_track = "%02d" % (track.index(),)
     mp3file = track.name()+".mp3"
+    pcmfile = track.name()+".pcm"
     directory = os.getcwd() + "/" + track.artists()[0].name() + "/" + track.album().name() + "/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     printstr("ripping " + mp3file + " ...")
-    p = Popen("lame --silent -V2 -h -r - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
+    p = Popen("lame --silent -V0 -h -r - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
     pipe = p.stdin
+    if rawpcm:
+      pcmfile = open(directory + pcmfile, 'w')
     ripping = True
 
+
 def rip_terminate(session, track):
-    global ripping
+    global ripping, pipe, pcmfile, rawpcm
     if pipe is not None:
         print(' done!')
         pipe.close()
-    ripping = False    
+    if rawpcm:
+        pcmfile.close()
+    ripping = False
 
 def rip(session, frames, frame_size, num_frames, sample_type, sample_rate, channels):
     if ripping:
         printstr('.')
         pipe.write(frames);
+        if rawpcm:
+          pcmfile.write(frames)
 
 def rip_id3(session, track): # write ID3 data
     num_track = "%02d" % (track.index(),)
@@ -75,7 +85,7 @@ def rip_id3(session, track): # write ID3 data
     shell(cmd)
 
     # delete cover
-    shell("rm -f cover.jpg")    
+    shell("rm -f cover.jpg")
 
 class RipperThread(threading.Thread):
     def __init__(self, ripper):
@@ -103,7 +113,7 @@ class RipperThread(threading.Thread):
         # ripping loop
         session = self.ripper.session
         for track in itrack:
-            
+
                 self.ripper.load_track(track)
 
                 rip_init(session, track)

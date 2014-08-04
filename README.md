@@ -1,7 +1,7 @@
 spotifyripper
 =============
 
-small ripper script for spotify (rips playlists to mp3 and includes ID3 tags) 
+small ripper script for spotify (rips playlists to mp3 and includes ID3 tags)
 
 note that stream ripping violates the ToC's of libspotify!
 
@@ -32,11 +32,10 @@ prerequisites:
 
 * lame (sudo apt-get install lame)
 
-* eyeD3 (pip install eyeD3)
+* eyeD3 (sudo pip install eyeD3 --allow-external eyeD3 --allow-unverified eyeD3)
 
 TODO
 ----
 - [ ] skip exisiting track (avoid / completed tracks / completed = successful id3)
 - [ ] detect if other spotify instance is interrupting
 - [ ] add album supprt : spotify:album:1UnRYaeCev9JVKEHWBEgHe
-
